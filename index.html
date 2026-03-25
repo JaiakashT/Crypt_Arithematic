@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Cryptarithmetic Solver — solve word-math puzzles like SEND + MORE = MONEY instantly using an optimized backtracking algorithm." />
+  <title>Cryptarithm Solver</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ════════════════════ NAVBAR ════════════════════ -->
+  <nav id="navbar">
+    <div class="nav-inner">
+      <a href="#" class="logo" onclick="showPage('home')">
+        <span class="logo-icon">🧩</span> CryptarithmSolver
+      </a>
+      <button class="hamburger" id="hamburger" onclick="toggleMobileNav()" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#" class="nav-link active" data-page="home" onclick="showPage('home')">Home</a></li>
+        <li><a href="#" class="nav-link" data-page="solver" onclick="showPage('solver')">Solver</a></li>
+        <li><a href="#" class="nav-link" data-page="learn" onclick="showPage('learn')">Learn</a></li>
+        <li><a href="#" class="nav-link" data-page="about" onclick="showPage('about')">About</a></li>
+        <li>
+          <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" aria-label="Toggle theme">
+            <span class="toggle-icon" id="toggleIcon">☀️</span>
+          </button>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- ════════════════════ HOME ════════════════════ -->
+  <section id="page-home" class="page active">
+    <div class="hero">
+      <!-- Animated blobs -->
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+      <div class="blob blob-3"></div>
+
+      <div class="hero-content">
+        <span class="badge">✨ Discover the logic behind the letters</span>
+        <h1>Solve Cryptarithms<br /><span class="gradient-text">In Milliseconds.</span></h1>
+        <p class="hero-sub">
+          Unravel word-math puzzles instantly. Our advanced backtracking algorithm
+          cracks complex equations like <code>SEND + MORE = MONEY</code> effortlessly.
+        </p>
+        <div class="hero-btns">
+          <button class="btn btn-primary" onclick="showPage('solver')">Start Solving →</button>
+          <button class="btn btn-ghost" onclick="showPage('learn')">Learn How It Works</button>
+        </div>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card scroll-3d">
+          <div class="feature-icon">⚡</div>
+          <h3>Lightning Fast</h3>
+          <p>Optimized DFS pruning evaluates thousands of states per second.</p>
+        </div>
+        <div class="feature-card scroll-3d">
+          <div class="feature-icon">🧠</div>
+          <h3>Smart Algorithm</h3>
+          <p>Learn the backtracking strategy that powers the engine.</p>
+        </div>
+        <div class="feature-card scroll-3d">
+          <div class="feature-icon">🎨</div>
+          <h3>Beautiful UI</h3>
+          <p>Sleek glassmorphism design with dark & light modes.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════ SOLVER ════════════════════ -->
+  <section id="page-solver" class="page">
+    <div class="solver-container">
+      <div class="glass-panel solver-panel scroll-3d">
+        <div class="solver-header">
+          <h2>Puzzle Solver</h2>
+          <label class="switch-label">
+            <span>Step-by-step</span>
+            <input type="checkbox" id="stepToggle" />
+            <span class="switch-track"><span class="switch-thumb"></span></span>
+          </label>
+        </div>
+
+        <form id="solverForm" onsubmit="handleSolve(event)">
+          <input
+            type="text"
+            id="puzzleInput"
+            placeholder="SEND + MORE = MONEY"
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <div class="solver-btns">
+            <button type="submit" class="btn btn-primary" id="solveBtn">
+              <span class="btn-icon">▶</span> Solve
+            </button>
+            <button type="button" class="btn btn-secondary" onclick="generateRandom()">
+              <span class="btn-icon">🎲</span> Random
+            </button>
+            <button type="button" class="btn btn-danger" onclick="resetSolver()">
+              <span class="btn-icon">↺</span> Reset
+            </button>
+          </div>
+        </form>
+
+        <!-- Loader -->
+        <div id="loader" class="loader hidden">
+          <div class="spinner"></div>
+          <p>Crunching numbers…</p>
+        </div>
+
+        <!-- Error -->
+        <div id="errorBox" class="error-box hidden"></div>
+
+        <!-- Results -->
+        <div id="resultsArea" class="results-area hidden">
+          <div class="result-grid">
+            <!-- Stats card -->
+            <div class="glass-panel result-card">
+              <h3><span class="result-icon">✅</span> Solution Found!</h3>
+              <div class="stat-row"><span>Total Solutions</span><strong id="statCount">0</strong></div>
+              <div class="stat-row"><span>Execution Time</span><strong id="statTime" class="accent">0 ms</strong></div>
+              <div class="stat-row"><span>Search Attempts</span><strong id="statAttempts" class="purple">0</strong></div>
+            </div>
+            <!-- Mapping card -->
+            <div class="glass-panel result-card">
+              <div class="mapping-header">
+                <h3>Digit Mapping</h3>
+                <button class="btn btn-small" onclick="copySolution()" id="copyBtn">📋 Copy</button>
+              </div>
+              <div id="mappingGrid" class="mapping-grid"></div>
+            </div>
+          </div>
+
+          <!-- Addition Display -->
+          <div class="glass-panel addition-panel scroll-3d" id="additionDisplay"></div>
+
+          <!-- Recent puzzles -->
+          <div class="glass-panel recent-panel scroll-3d">
+            <h3>Recent Puzzles</h3>
+            <ul id="recentList" class="recent-list"></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════ LEARN ════════════════════ -->
+  <section id="page-learn" class="page">
+    <div class="learn-container">
+      <div class="learn-header scroll-3d">
+        <h1>Learn Cryptarithmetic</h1>
+        <p>Understand the math, rules, and algorithms behind the puzzles.</p>
+      </div>
+
+      <div class="accordion">
+
+        <!-- Section 1 -->
+        <div class="accordion-item open scroll-3d">
+          <button class="accordion-btn" onclick="toggleAccordion(this)">
+            <span class="acc-icon">📖</span>
+            <span>What is Cryptarithmetic?</span>
+            <span class="chevron">▾</span>
+          </button>
+          <div class="accordion-body">
+            <p>Cryptarithmetic (also called <strong>alphametics</strong>) is a type of mathematical puzzle where <em>digits are replaced by letters</em>. The goal is to find a digit for each letter so the resulting arithmetic equation is correct.</p>
+            <div class="example-box">SEND + MORE = MONEY</div>
+            <p>Each letter stands for a unique digit (0-9), and the equation must hold true when letters are replaced by their assigned digits.</p>
+          </div>
+        </div>
+
+        <!-- Section 2 -->
+        <div class="accordion-item scroll-3d">
+          <button class="accordion-btn" onclick="toggleAccordion(this)">
+            <span class="acc-icon">📏</span>
+            <span>Rules of Cryptarithmetic</span>
+            <span class="chevron">▾</span>
+          </button>
+          <div class="accordion-body">
+            <ul class="rules-list">
+              <li>Each letter represents a <strong>unique digit</strong> (0–9).</li>
+              <li>No two different letters can map to the same digit.</li>
+              <li>The <strong>leading letter</strong> of any multi-letter word <em>cannot be zero</em> (no leading zeros).</li>
+              <li>Standard base-10 arithmetic applies, including carrying.</li>
+              <li>Usually a puzzle has exactly <strong>one</strong> valid solution.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Section 3 -->
+        <div class="accordion-item">
+          <button class="accordion-btn" onclick="toggleAccordion(this)">
+            <span class="acc-icon">🔢</span>
+            <span>Types of Alphametic Puzzles</span>
+            <span class="chevron">▾</span>
+          </button>
+          <div class="accordion-body">
+            <div class="type-cards">
+              <div class="type-card">
+                <h4>Addition</h4>
+                <code>SEND + MORE = MONEY</code>
+              </div>
+              <div class="type-card">
+                <h4>Multiplication</h4>
+                <code>IS × SO = TOO</code>
+              </div>
+              <div class="type-card">
+                <h4>Multi-addend</h4>
+                <code>EARTH + AIR + FIRE + WATER = NATURE</code>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 4 -->
+        <div class="accordion-item">
+          <button class="accordion-btn" onclick="toggleAccordion(this)">
+            <span class="acc-icon">📝</span>
+            <span>Step-by-Step: SEND + MORE = MONEY</span>
+            <span class="chevron">▾</span>
+          </button>
+          <div class="accordion-body">
+            <p>Let's walk through the classic puzzle.</p>
+            <ol class="step-list">
+              <li><strong>Identify unique letters:</strong> S, E, N, D, M, O, R, Y — 8 letters.</li>
+              <li><strong>Leading letters:</strong> S and M cannot be 0.</li>
+              <li><strong>Column analysis (rightmost first):</strong>
+                <ul>
+                  <li>D + E = Y (+ possible carry)</li>
+                  <li>N + R (+ carry) = E (+ carry × 10)</li>
+                  <li>E + O (+ carry) = N (+ carry × 10)</li>
+                  <li>S + M (+ carry) = MO (two digits → M must be 1)</li>
+                </ul>
+              </li>
+              <li><strong>Deduction:</strong> Since MONEY is 5 digits and SEND/MORE are 4, M = 1 and S ≥ 8. With constraints, S = 9.</li>
+              <li><strong>Continue back-substituting</strong> to get O = 0, E = 5, N = 6, D = 7, R = 8, Y = 2.</li>
+            </ol>
+            <div class="example-box">
+              9567 + 1085 = 10652 ✓
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 5 -->
+        <div class="accordion-item">
+          <button class="accordion-btn" onclick="toggleAccordion(this)">
+            <span class="acc-icon">⚙️</span>
+            <span>Backtracking Algorithm</span>
+            <span class="chevron">▾</span>
+          </button>
+          <div class="accordion-body">
+            <p>Backtracking is a <strong>Depth-First Search (DFS)</strong> strategy that builds candidates incrementally and <em>abandons</em> a branch as soon as it detects the partial solution is invalid.</p>
+            <div class="code-block"><pre>function solve(charIndex) {
+  if (charIndex === chars.length) {
+    return evaluate();      // check if sum == 0
+  }
+  for (digit = 0 to 9) {
+    if (digit not used AND passes constraints) {
+      assign(chars[charIndex], digit);
+      if (solve(charIndex + 1)) return true;
+      unassign(chars[charIndex]);
+    }
+  }
+  return false;             // backtrack
+}</pre></div>
+            <p><strong>Pruning optimizations:</strong></p>
+            <ul class="rules-list">
+              <li><em>Leading-zero skip</em> — skip digit 0 for first letters.</li>
+              <li><em>Weight-based evaluation</em> — convert words to character weights (base-10 positions), check weighted sum equals zero instead of evaluating full words each time.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Section 6 -->
+        <div class="accordion-item">
+          <button class="accordion-btn" onclick="toggleAccordion(this)">
+            <span class="acc-icon">🌍</span>
+            <span>Real-Life Applications</span>
+            <span class="chevron">▾</span>
+          </button>
+          <div class="accordion-body">
+            <ul class="rules-list">
+              <li><strong>Constraint Satisfaction Problems (CSP)</strong> — Foundation for AI planning and scheduling.</li>
+              <li><strong>Cryptography</strong> — Understanding substitution cipher techniques.</li>
+              <li><strong>Education</strong> — Teaching logical/mathematical reasoning in schools.</li>
+              <li><strong>Competitive Programming</strong> — Common puzzle type in coding contests.</li>
+              <li><strong>Game Design</strong> — Puzzle games based on alphametic concepts.</li>
+            </ul>
+          </div>
+        </div>
+
+      </div><!-- /accordion -->
+    </div>
+  </section>
+
+  <!-- ════════════════════ ABOUT ════════════════════ -->
+  <section id="page-about" class="page">
+    <div class="about-container">
+      <div class="about-header scroll-3d">
+        <h1>About the Project</h1>
+        <p>A client-side demonstration of backtracking algorithms applied to Cryptarithmetic puzzles.</p>
+      </div>
+
+      <div class="about-grid">
+        <div class="glass-panel about-card scroll-3d">
+          <h3>🛠️ Technologies Used</h3>
+          <div class="tech-tags">
+            <span class="tag">HTML5</span>
+            <span class="tag">CSS3</span>
+            <span class="tag">JavaScript</span>
+            <span class="tag">Backtracking</span>
+            <span class="tag">DFS Pruning</span>
+            <span class="tag">Glassmorphism</span>
+            <span class="tag">Responsive Design</span>
+            <span class="tag">LocalStorage</span>
+          </div>
+        </div>
+        <div class="glass-panel about-card">
+          <h3>⚙️ How it Works</h3>
+          <p>The solver converts each word into <strong>base-10 positional weights</strong> per character. It then uses recursive DFS with backtracking, assigning digits 0-9 to unique letters and checking if the weighted sum equals zero. Leading-zero constraints are enforced as pruning steps.</p>
+        </div>
+        <div class="glass-panel about-card">
+          <h3>📂 Project Structure</h3>
+          <ul class="structure-list">
+            <li><code>index.html</code> — Structure & content</li>
+            <li><code>style.css</code> — Styling, animations, themes</li>
+            <li><code>script.js</code> — Solver logic, UI interactions</li>
+          </ul>
+        </div>
+        <div class="glass-panel about-card">
+          <h3>🎓 Purpose</h3>
+          <p>Built as a college project to demonstrate the application of <strong>Artificial Intelligence</strong> and <strong>Constraint Satisfaction</strong> concepts in a modern, interactive web interface.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script src="script.js"></script>
+</body>
+</html>
